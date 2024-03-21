@@ -45,6 +45,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	if vm.Spec.Template.Spec.Domain.Firmware == nil || vm.Spec.Template.Spec.Domain.Firmware.UUID == "" {
 		fmt.Println("VM created without UUID, patching in...")
+
+		response.Response.Warnings = []string{"No UUID in request, patched one in"}
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

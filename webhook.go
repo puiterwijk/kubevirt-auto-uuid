@@ -34,10 +34,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fmt.Println("Request VM: ", vm)
+	fmt.Println("Request UID: ", review.Request.UID)
 
 	var response admission_v1.AdmissionReview
 	response.Response.UID = review.Request.UID
 	response.Response.Allowed = false
+
+	if vm.Spec.Template.Spec.Domain.Firmware == nil || vm.Spec.Template.Spec.Domain.Firmware.UUID == "" {
+		fmt.Println("VM created without UUID, patching in...")
+	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Println("Error writing response:", err)

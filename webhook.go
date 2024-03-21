@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/google/uuid"
 	admission_v1 "k8s.io/api/admission/v1"
 	kubevirt_v1 "kubevirt.io/api/core/v1"
 )
@@ -33,9 +34,6 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Request VM: ", vm)
-	fmt.Println("Request UID: ", review.Request.UID)
-
 	var response admission_v1.AdmissionReview
 	response.APIVersion = review.APIVersion
 	response.Kind = review.Kind
@@ -47,6 +45,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("VM created without UUID, patching in...")
 
 		response.Response.Warnings = []string{"No UUID in request, patched one in"}
+		*response.Response.PatchType = admission_v1.PatchTypeJSONPatch
+		response.Response.Patch = []byte(
+			fmt.Sprintf(
+				`[{"op": "add", "path": "/spec/template/spec/domain/firmware/uuid", "value": "%s"}]`,
+				uuid.New(),
+			),
+		)
+	}
+
+	if data, err := json.Marshal(response); err == nil {
+		log.Println("Marshalled data: ", string(data))
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

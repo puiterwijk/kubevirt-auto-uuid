@@ -2,15 +2,15 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: kubevirt-uuid-fixer
+  name: kubevirt-auto-uuid
 ---
 kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
-  name: kubevirt-uuid-fixer
-  namespace: kubevirt-uuid-fixer
+  name: kubevirt-auto-uuid
+  namespace: kubevirt-auto-uuid
   labels:
-    app: kubevirt-uuid-fixer
+    app: kubevirt-auto-uuid
 spec:
   lookupPolicy:
     local: false
@@ -18,15 +18,15 @@ spec:
 kind: BuildConfig
 apiVersion: build.openshift.io/v1
 metadata:
-  name: kubevirt-uuid-fixer
-  namespace: kubevirt-uuid-fixer
+  name: kubevirt-auto-uuid
+  namespace: kubevirt-auto-uuid
   labels:
-    app: kubevirt-uuid-fixer
+    app: kubevirt-auto-uuid
 spec:
   output:
     to:
       kind: ImageStreamTag
-      name: 'kubevirt-uuid-fixer:latest'
+      name: 'kubevirt-auto-uuid:latest'
   successfulBuildsHistoryLimit: 5
   failedBuildsHistoryLimit: 5
   strategy:
@@ -52,28 +52,28 @@ apiVersion: apps/v1
 metadata:
   annotations:
     alpha.image.policy.openshift.io/resolve-names: '*'
-  name: kubevirt-uuid-fixer
-  namespace: kubevirt-uuid-fixer
+  name: kubevirt-auto-uuid
+  namespace: kubevirt-auto-uuid
   labels:
-    app: kubevirt-uuid-fixer
+    app: kubevirt-auto-uuid
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kubevirt-uuid-fixer
+      app: kubevirt-auto-uuid
   template:
     metadata:
       labels:
-        app: kubevirt-uuid-fixer
-        deployment: kubevirt-uuid-fixer
+        app: kubevirt-auto-uuid
+        deployment: kubevirt-auto-uuid
     spec:
       volumes:
       - name: tls
         secret:
-          secretName: kubevirt-uuid-fixer-tls
+          secretName: kubevirt-auto-uuid-tls
       containers:
-      - name: kubevirt-uuid-fixer
-        image: 'image-registry.openshift-image-registry.svc:5000/virt-uuid-fixer/kubevirt-uuid-fixer:latest'
+      - name: kubevirt-auto-uuid
+        image: 'image-registry.openshift-image-registry.svc:5000/kubevirt-auto-uuid/kubevirt-auto-uuid:latest'
         imagePullPolicy: Always
         volumeMounts:
         - name: tls
@@ -82,7 +82,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 8443
             scheme: HTTPS
           timeoutSeconds: 1
           periodSeconds: 10
@@ -91,7 +91,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 8443
             scheme: HTTPS
           timeoutSeconds: 1
           periodSeconds: 10
@@ -111,25 +111,25 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: kubevirt-uuid-fixer
-  namespace: kubevirt-uuid-fixer
+  name: kubevirt-auto-uuid
+  namespace: kubevirt-auto-uuid
   labels:
-    app: kubevirt-uuid-fixer
+    app: kubevirt-auto-uuid
   annotations:
-    service.beta.openshift.io/serving-cert-secret-name: kubevirt-uuid-fixer-tls
+    service.beta.openshift.io/serving-cert-secret-name: kubevirt-auto-uuid-tls
 spec:
   ipFamilies:
     - IPv4
   ports:
-    - name: 8080-tcp
+    - name: 8443-tcp
       protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 8443
+      targetPort: 8443
   internalTrafficPolicy: Cluster
   type: ClusterIP
   ipFamilyPolicy: SingleStack
   sessionAffinity: None
   selector:
-    app: kubevirt-uuid-fixer
-    deployment: kubevirt-uuid-fixer
+    app: kubevirt-auto-uuid
+    deployment: kubevirt-auto-uuid
 ---

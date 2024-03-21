@@ -9,8 +9,8 @@ import (
 
 var (
 	optListen  = flag.String("listen", ":8080", "Listen expression")
-	optTlsCert = flag.String("cert", "/etc/tls.crt", "Path to TLS certificate")
-	optTlsKey  = flag.String("key", "/etc/tls.key", "Path to TLS key")
+	optTlsCert = flag.String("cert", "/etc/tls/tls.crt", "Path to TLS certificate")
+	optTlsKey  = flag.String("key", "/etc/tls/tls.key", "Path to TLS key")
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {

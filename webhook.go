@@ -63,7 +63,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 				newUuid,
 			),
 		}
-		*response.Response.PatchType = admission_v1.PatchTypeJSONPatch
+		var patchtype = admission_v1.PatchTypeJSONPatch
+		response.Response.PatchType = &patchtype
 		base64.StdEncoding.Encode(response.Response.Patch, []byte(patch))
 	}
 

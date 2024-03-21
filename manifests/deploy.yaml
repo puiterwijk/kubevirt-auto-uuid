@@ -39,7 +39,7 @@ spec:
   source:
     type: Git
     git:
-      uri: 'git@github.com:puiterwijk/kubevirt-auto-uuid'
+      uri: 'https://github.com/puiterwijk/kubevirt-auto-uuid'
     contextDir: /
   triggers:
     - type: ConfigChange

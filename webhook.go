@@ -52,10 +52,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 			newUuid,
 		)
 
-		patch := fmt.Sprintf(
+		patch := []byte(fmt.Sprintf(
 			`[{"op": "add", "path": "/spec/template/spec/domain/firmware/uuid", "value": "%s"}]`,
 			newUuid,
-		)
+		))
 
 		response.Response.Warnings = []string{
 			fmt.Sprintf(
@@ -65,7 +65,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 		var patchtype = admission_v1.PatchTypeJSONPatch
 		response.Response.PatchType = &patchtype
-		base64.StdEncoding.Encode(response.Response.Patch, []byte(patch))
+		response.Response.Patch = make([]byte, base64.StdEncoding.EncodedLen(len(patch)))
+		base64.StdEncoding.Encode(response.Response.Patch, patch)
 	}
 
 	if data, err := json.Marshal(response); err == nil {

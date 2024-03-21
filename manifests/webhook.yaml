@@ -1,0 +1,34 @@
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: kubevirt-auto-uuid
+webhooks:
+- admissionReviewVersions:
+  - v1
+  name: kubevirt-auto-uuid.puiterwijk.org
+  rules:
+  - apiGroups:
+    - kubevirt.io
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    resources:
+    - virtualmachines
+    scope: '*'
+  clientConfig:
+    caBundle: SERVICECACRT
+    service:
+      name: kubevirt-auto-uuid
+      namespace: kubevirt-auto-uuid
+      path: /
+      port: 8443
+  failurePolicy: Fail
+  matchPolicy: Equivalent
+  namespaceSelector: {}
+  objectSelector: {}
+  reinvocationPolicy: Never
+  sideEffects: None
+  timeoutSeconds: 10
+---

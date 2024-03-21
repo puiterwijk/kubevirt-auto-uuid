@@ -3,6 +3,8 @@ apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
   name: kubevirt-auto-uuid
+  annotations:
+    service.beta.openshift.io/inject-cabundle: "true"
 webhooks:
 - admissionReviewVersions:
   - v1
@@ -18,7 +20,6 @@ webhooks:
     - virtualmachines
     scope: '*'
   clientConfig:
-    caBundle: SERVICECACRT
     service:
       name: kubevirt-auto-uuid
       namespace: kubevirt-auto-uuid

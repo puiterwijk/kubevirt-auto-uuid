@@ -23,6 +23,9 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc("/", handler)
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	})
 
 	fmt.Printf("Listening on %s, tls cert %s, tls key %s\n", *optListen, *optTlsCert, *optTlsKey)
 	log.Fatal(

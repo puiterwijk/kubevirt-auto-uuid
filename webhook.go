@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	optDebug   = flag.Bool("debug", false, "Enable debugging")
 	optListen  = flag.String("listen", ":8443", "Listen expression")
 	optTlsCert = flag.String("cert", "/etc/tls/tls.crt", "Path to TLS certificate")
 	optTlsKey  = flag.String("key", "/etc/tls/tls.key", "Path to TLS key")
@@ -39,7 +40,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	response.Kind = review.Kind
 	response.Response = new(admission_v1.AdmissionResponse)
 	response.Response.UID = review.Request.UID
-	response.Response.Allowed = false
+	response.Response.Allowed = true
 
 	if vm.Spec.Template.Spec.Domain.Firmware == nil || vm.Spec.Template.Spec.Domain.Firmware.UUID == "" {
 		newUuid := uuid.New()
@@ -67,8 +68,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		response.Response.Patch = patch
 	}
 
-	if data, err := json.Marshal(response); err == nil {
-		log.Println("Marshalled data: ", string(data))
+	if *optDebug {
+		if data, err := json.Marshal(response); err == nil {
+			log.Println("Marshalled data: ", string(data))
+		}
 	}
 
 	if err := json.NewEncoder(w).Encode(response); err != nil {

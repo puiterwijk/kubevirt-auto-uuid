@@ -43,14 +43,26 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	response.Response.Allowed = false
 
 	if vm.Spec.Template.Spec.Domain.Firmware == nil || vm.Spec.Template.Spec.Domain.Firmware.UUID == "" {
-		fmt.Println("VM created without UUID, patching in...")
+		newUuid := uuid.New()
+
+		fmt.Printf(
+			"VM created without UUID, identifier: %s.%s, new UUID: %s\n",
+			vm.Namespace,
+			vm.Name,
+			newUuid,
+		)
 
 		patch := fmt.Sprintf(
 			`[{"op": "add", "path": "/spec/template/spec/domain/firmware/uuid", "value": "%s"}]`,
-			uuid.New(),
+			newUuid,
 		)
 
-		response.Response.Warnings = []string{"No UUID in request, patched one in"}
+		response.Response.Warnings = []string{
+			fmt.Sprintf(
+				"No UUID in request, assigned %s",
+				newUuid,
+			),
+		}
 		*response.Response.PatchType = admission_v1.PatchTypeJSONPatch
 		base64.StdEncoding.Encode(response.Response.Patch, []byte(patch))
 	}

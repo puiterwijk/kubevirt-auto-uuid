@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -44,14 +45,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if vm.Spec.Template.Spec.Domain.Firmware == nil || vm.Spec.Template.Spec.Domain.Firmware.UUID == "" {
 		fmt.Println("VM created without UUID, patching in...")
 
+		patch := fmt.Sprintf(
+			`[{"op": "add", "path": "/spec/template/spec/domain/firmware/uuid", "value": "%s"}]`,
+			uuid.New(),
+		)
+
 		response.Response.Warnings = []string{"No UUID in request, patched one in"}
 		*response.Response.PatchType = admission_v1.PatchTypeJSONPatch
-		response.Response.Patch = []byte(
-			fmt.Sprintf(
-				`[{"op": "add", "path": "/spec/template/spec/domain/firmware/uuid", "value": "%s"}]`,
-				uuid.New(),
-			),
-		)
+		base64.StdEncoding.Encode(response.Response.Patch, []byte(patch))
 	}
 
 	if data, err := json.Marshal(response); err == nil {

@@ -37,6 +37,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Request UID: ", review.Request.UID)
 
 	var response admission_v1.AdmissionReview
+	response.Response = new(admission_v1.AdmissionResponse)
 	response.Response.UID = review.Request.UID
 	response.Response.Allowed = false
 

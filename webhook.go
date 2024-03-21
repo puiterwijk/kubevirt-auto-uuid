@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	admission_v1 "k8s.io/api/admission/v1"
+	kubevirt_v1 "kubevirt.io/api/core/v1"
 )
 
 var (
@@ -19,16 +20,29 @@ var (
 func handler(w http.ResponseWriter, r *http.Request) {
 	var review admission_v1.AdmissionReview
 
-	err := json.NewDecoder(r.Body).Decode(&review)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&review); err != nil {
 		log.Println("Invalid request received:", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println("Request body: ", review)
+	var vm kubevirt_v1.VirtualMachine
+	if err := json.Unmarshal(review.Request.Object.Raw, &vm); err != nil {
+		log.Println("Invalid VM request received:", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	http.Error(w, "Error", 500)
+	fmt.Println("Request VM: ", vm)
+
+	var response admission_v1.AdmissionReview
+	response.Response.UID = review.Request.UID
+	response.Response.Allowed = false
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Println("Error writing response:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func main() {

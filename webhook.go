@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
@@ -15,6 +16,13 @@ var (
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Received request: ", r)
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Invalid request: no body", 400)
+		return
+	}
+	fmt.Println("Request body: ", string(body))
 
 	http.Error(w, "Error", 500)
 }

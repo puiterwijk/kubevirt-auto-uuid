@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -65,8 +64,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		}
 		var patchtype = admission_v1.PatchTypeJSONPatch
 		response.Response.PatchType = &patchtype
-		response.Response.Patch = make([]byte, base64.StdEncoding.EncodedLen(len(patch)))
-		base64.StdEncoding.Encode(response.Response.Patch, patch)
+		response.Response.Patch = patch
 	}
 
 	if data, err := json.Marshal(response); err == nil {

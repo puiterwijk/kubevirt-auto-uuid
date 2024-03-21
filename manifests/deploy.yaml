@@ -1,9 +1,14 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubevirt-uuid-fixer
+---
 kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
   name: kubevirt-uuid-fixer
-  namespace: virt-uuid-fixer
+  namespace: kubevirt-uuid-fixer
   labels:
     app: kubevirt-uuid-fixer
 spec:
@@ -14,7 +19,7 @@ kind: BuildConfig
 apiVersion: build.openshift.io/v1
 metadata:
   name: kubevirt-uuid-fixer
-  namespace: virt-uuid-fixer
+  namespace: kubevirt-uuid-fixer
   labels:
     app: kubevirt-uuid-fixer
 spec:
@@ -48,7 +53,7 @@ metadata:
   annotations:
     alpha.image.policy.openshift.io/resolve-names: '*'
   name: kubevirt-uuid-fixer
-  namespace: virt-uuid-fixer
+  namespace: kubevirt-uuid-fixer
   labels:
     app: kubevirt-uuid-fixer
 spec:
@@ -107,7 +112,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: kubevirt-uuid-fixer
-  namespace: virt-uuid-fixer
+  namespace: kubevirt-uuid-fixer
   labels:
     app: kubevirt-uuid-fixer
   annotations:

@@ -1,0 +1,130 @@
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: kubevirt-uuid-fixer
+  namespace: virt-uuid-fixer
+  labels:
+    app: kubevirt-uuid-fixer
+spec:
+  lookupPolicy:
+    local: false
+---
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: kubevirt-uuid-fixer
+  namespace: virt-uuid-fixer
+  labels:
+    app: kubevirt-uuid-fixer
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'kubevirt-uuid-fixer:latest'
+  successfulBuildsHistoryLimit: 5
+  failedBuildsHistoryLimit: 5
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        namespace: openshift
+        name: 'golang:1.18-ubi7'
+  source:
+    type: Git
+    git:
+      uri: 'git@github.com:puiterwijk/kubevirt-auto-uuid'
+    contextDir: /
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChange: {}
+  runPolicy: Serial
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    alpha.image.policy.openshift.io/resolve-names: '*'
+  name: kubevirt-uuid-fixer
+  namespace: virt-uuid-fixer
+  labels:
+    app: kubevirt-uuid-fixer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubevirt-uuid-fixer
+  template:
+    metadata:
+      labels:
+        app: kubevirt-uuid-fixer
+        deployment: kubevirt-uuid-fixer
+    spec:
+      volumes:
+      - name: tls
+        secret:
+          secretName: kubevirt-uuid-fixer-tls
+      containers:
+      - name: kubevirt-uuid-fixer
+        image: 'image-registry.openshift-image-registry.svc:5000/virt-uuid-fixer/kubevirt-uuid-fixer:latest'
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: tls
+          readOnly: true
+          mountPath: /etc/tls
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTPS
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTPS
+          timeoutSeconds: 1
+          periodSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: kubevirt-uuid-fixer
+  namespace: virt-uuid-fixer
+  labels:
+    app: kubevirt-uuid-fixer
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: kubevirt-uuid-fixer-tls
+spec:
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: 8080-tcp
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  internalTrafficPolicy: Cluster
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: kubevirt-uuid-fixer
+    deployment: kubevirt-uuid-fixer
+---

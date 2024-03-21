@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
+
+	admission_v1 "k8s.io/api/admission/v1"
 )
 
 var (
@@ -15,14 +17,16 @@ var (
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Received request: ", r)
+	var review admission_v1.AdmissionReview
 
-	body, err := io.ReadAll(r.Body)
+	err := json.NewDecoder(r.Body).Decode(&review)
 	if err != nil {
-		http.Error(w, "Invalid request: no body", 400)
+		log.Println("Invalid request received:", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Println("Request body: ", string(body))
+
+	fmt.Println("Request body: ", review)
 
 	http.Error(w, "Error", 500)
 }

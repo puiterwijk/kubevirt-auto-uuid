@@ -2,8 +2,6 @@ module github.com/puiterwijk/kubevirt-auto-uuid
 
 go 1.21
 
-toolchain go1.22.0
-
 require k8s.io/api v0.29.3
 
 require (
